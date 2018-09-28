@@ -27,7 +27,7 @@ namespace WpfImageTest
         /* ---------------------------------------------------- */
         //     プロパティ
         /* ---------------------------------------------------- */
-        public Point Origin { get; set; } = new Point(300, 100);    // 原点
+        public Point Origin { get; set; } = new Point(450, 100);    // 原点
         public List<ImgContainer> Containers { get; set; } = new List<ImgContainer>();
         public ImagePool ImagePool { get; set; } = new ImagePool();
 
@@ -66,9 +66,15 @@ namespace WpfImageTest
             ImagePool.InitIndex(index);
             InitContainerPos();
             InitContainerGrid();
+
+            // 前方向
             await PickImageToContainer(Containers[2], false);
             await PickImageToContainer(Containers[3], false);
             await PickImageToContainer(Containers[4], false);
+
+            // 巻き戻し方向
+            await PickImageToContainer(Containers[1], true);
+            await PickImageToContainer(Containers[0], true);
         }
 
         public async Task PickImageToContainer(ImgContainer container, bool isBackward)
@@ -82,10 +88,31 @@ namespace WpfImageTest
                     if(!isBackward) image.Source = await ImagePool.PickForward();
 
                     // 巻き戻し方向
-                    //else image.Source = await ImagePool.PickBackward();
+                    else image.Source = await ImagePool.PickBackward();
                 }
             }
 
         }
+
+        public async Task Slide()
+        {
+            ImgContainer loopConteiner = null;
+
+            foreach(ImgContainer c in Containers)
+            {
+                c.Slide();
+                c.CurrentIndex -= 1;
+                if(c.CurrentIndex < -numofBackwardContainer)
+                {
+                    c.CurrentIndex = numofForwardContainer;
+                    loopConteiner = c;
+                }
+            }
+
+            if(loopConteiner != null) await PickImageToContainer(loopConteiner, false);
+
+            InitContainerPos();
+        }
+
     }
 }

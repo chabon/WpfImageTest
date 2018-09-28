@@ -30,9 +30,6 @@ namespace WpfImageTest
             get { return MainGrid.ColumnDefinitions.Count * MainGrid.RowDefinitions.Count; }
         }
 
-
-
-
         public ImgContainer(int defaultIndex)
         {
             InitializeComponent();
@@ -42,7 +39,7 @@ namespace WpfImageTest
 
         public void InitPos(Point origin)
         {
-            double left = origin.X + this.DefaultIndex * this.Width;
+            double left = origin.X + CurrentIndex * Width;
             //double top  = origin.Y + this.DefaultIndex * this.Height;
             Margin = new Thickness(left, Margin.Top, Margin.Right, Margin.Bottom);
         }
@@ -50,6 +47,8 @@ namespace WpfImageTest
         public void InitGrid(int numofCol, int numofRow)
         {
             MainGrid.Children.Clear();
+            MainGrid.ColumnDefinitions.Clear();
+            MainGrid.RowDefinitions.Clear();
 
             for(int i=0; i< numofCol; i++)
             {
@@ -74,5 +73,16 @@ namespace WpfImageTest
                 }
             }
         }
+
+        public void Move(double x, double y)
+        {
+            this.Margin = new Thickness( Margin.Left + x, Margin.Top + y, Margin.Right, Margin.Bottom );
+        }
+
+        public void Slide()
+        {
+            Move(-Width, 0);
+        }
+
     }
 }

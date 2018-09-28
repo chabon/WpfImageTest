@@ -23,17 +23,17 @@ namespace WpfImageTest
     public partial class MainWindow : Window
     {
         public BenchMarker BenchMarder = new BenchMarker();
-        public ImgContainerManager TileContainerManager = new ImgContainerManager();
+        public ImgContainerManager ImgContainerManager = new ImgContainerManager();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            TileContainerManager.Initialize();
-            TileContainerManager.Containers.ForEach( tc => {
+            ImgContainerManager.Initialize();
+            ImgContainerManager.Containers.ForEach( tc => {
                 MainGrid.Children.Add(tc);
             });
-            TileContainerManager.InitContainerPos();
+            ImgContainerManager.InitContainerPos();
 
 
             this.Drop += (s, e) =>
@@ -41,8 +41,8 @@ namespace WpfImageTest
                 string[] folder = e.Data.GetData(DataFormats.FileDrop) as string[];
                 var files = Directory.GetFiles( folder[0], "*.*", SearchOption.AllDirectories );
 
-                TileContainerManager.ImagePool.Initialize(files);
-                TileContainerManager.InitAllContainerImage(0);
+                ImgContainerManager.ImagePool.Initialize(files);
+                ImgContainerManager.InitAllContainerImage(0);
 
                 // Async
                 //foreach( string path in files )
@@ -63,12 +63,11 @@ namespace WpfImageTest
 
         private void LeftButton_Click(object sender, RoutedEventArgs e)
         {
-
+            ImgContainerManager.Slide();
         }
 
         private void RightButton_Click(object sender, RoutedEventArgs e)
         {
-
         }
     }
 }

@@ -68,5 +68,26 @@ namespace WpfImageTest
                 return context.BitmapImage;
             }
         } 
+
+        public async Task<BitmapImage> PickBackward()
+        {
+            ImageFileContext context = ImageFileContextList[BackwardIndex];
+            BackwardIndex--;
+            if(BackwardIndex < 0 )
+            {
+                BackwardIndex = ImageFileContextList.Count - 1;
+            }
+
+            if( context.BitmapImage == null )
+            {
+                context.BitmapImage = await context.GetImage();
+                return context.BitmapImage;
+            }
+            else
+            {
+                return context.BitmapImage;
+            }
+        } 
+
     }
 }
