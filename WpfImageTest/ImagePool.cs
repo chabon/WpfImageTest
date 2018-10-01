@@ -19,7 +19,6 @@ namespace WpfImageTest
         public int BackwardIndex { get; private set; } = 0;
 
 
-
         public void Initialize(string[] pathes)
         {
             ImageFileContextList.Clear();
@@ -34,9 +33,11 @@ namespace WpfImageTest
 
         public void InitIndex(int index)
         {
+            int maxIdx = ImageFileContextList.Count - 1;
+
             // 前方向
             ForwardIndex = index;
-            if(ForwardIndex < 0 || ImageFileContextList.Count <= ForwardIndex )
+            if(ForwardIndex < 0 || maxIdx < ForwardIndex )
             {
                 ForwardIndex = 0;
             }
@@ -45,11 +46,41 @@ namespace WpfImageTest
             BackwardIndex = ForwardIndex - 1;
             if( BackwardIndex < 0 )
             {
-                BackwardIndex = ImageFileContextList.Count - 1;
+                BackwardIndex = maxIdx;
             }
         }
 
-        public async Task<BitmapImage> PickForward()
+        public void ShiftForwardIndex(int vari)
+        {
+            ForwardIndex += vari;
+            int maxIdx = ImageFileContextList.Count - 1;
+            if( ForwardIndex > maxIdx )
+            {
+                ForwardIndex = ForwardIndex % maxIdx;
+            }
+            else if( ForwardIndex < 0)
+            {
+                int p = ForwardIndex % maxIdx;
+                ForwardIndex = maxIdx + p;
+            }
+        }
+
+        public void ShiftBackwardIndex(int vari)
+        {
+            BackwardIndex += vari;
+            int maxIdx = ImageFileContextList.Count - 1;
+            if( BackwardIndex > maxIdx )
+            {
+                BackwardIndex = BackwardIndex % maxIdx;
+            }
+            else if( BackwardIndex < 0)
+            {
+                int p = BackwardIndex % maxIdx;
+                BackwardIndex = maxIdx + p;
+            }
+        }
+
+        public ImageFileContext PickForward()
         {
             ImageFileContext context = ImageFileContextList[ForwardIndex];
             ForwardIndex++;
@@ -58,18 +89,10 @@ namespace WpfImageTest
                 ForwardIndex = 0;
             }
 
-            if( context.BitmapImage == null )
-            {
-                context.BitmapImage = await context.GetImage();
-                return context.BitmapImage;
-            }
-            else
-            {
-                return context.BitmapImage;
-            }
+            return context;
         } 
 
-        public async Task<BitmapImage> PickBackward()
+        public ImageFileContext PickBackward()
         {
             ImageFileContext context = ImageFileContextList[BackwardIndex];
             BackwardIndex--;
@@ -78,15 +101,7 @@ namespace WpfImageTest
                 BackwardIndex = ImageFileContextList.Count - 1;
             }
 
-            if( context.BitmapImage == null )
-            {
-                context.BitmapImage = await context.GetImage();
-                return context.BitmapImage;
-            }
-            else
-            {
-                return context.BitmapImage;
-            }
+            return context;
         } 
 
     }

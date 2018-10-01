@@ -51,6 +51,11 @@ namespace WpfImageTest
             }
         }
 
+        public void InitContainerIndex()
+        {
+            Containers.ForEach( tc => tc.InitIndex() );
+        }
+
         public void InitContainerPos()
         {
             Containers.ForEach( tc => tc.InitPos(Origin) );
@@ -64,43 +69,66 @@ namespace WpfImageTest
         public async Task InitAllContainerImage(int index)
         {
             ImagePool.InitIndex(index);
+            InitContainerIndex();
             InitContainerPos();
             InitContainerGrid();
 
-            // 前方向
-            await PickImageToContainer(Containers[2], false);
-            await PickImageToContainer(Containers[3], false);
-            await PickImageToContainer(Containers[4], false);
+            // 前方向マッピング
+            MapImageFileContextToContainer(Containers[2], false, false);
+            MapImageFileContextToContainer(Containers[3], false, false);
+            MapImageFileContextToContainer(Containers[4], false, false);
 
-            // 巻き戻し方向
-            await PickImageToContainer(Containers[1], true);
-            await PickImageToContainer(Containers[0], true);
+            // 巻き戻し方向マッピング
+            MapImageFileContextToContainer(Containers[1], true, false);
+            MapImageFileContextToContainer(Containers[0], true, false);
+
+            // 画像のロード
+            await Containers[2].LoadImage();
+            await Containers[3].LoadImage();
+            await Containers[4].LoadImage();
+            await Containers[1].LoadImage();
+            await Containers[0].LoadImage();
         }
 
-        public async Task PickImageToContainer(ImgContainer container, bool isBackward)
+        public void MapImageFileContextToContainer(ImgContainer container, bool isBackward, bool isSliding)
         {
-            foreach( var child in container.MainGrid.Children )
-            {
-                Image image = child as Image;
-                if(image != null )
-                {
-                    // 前方向
-                    if(!isBackward) image.Source = await ImagePool.PickForward();
+            container.ImageFileContextMapList.Clear();
 
-                    // 巻き戻し方向
-                    else image.Source = await ImagePool.PickBackward();
+            for(int i=0; i < container.NumofGrid; i++ )
+            {
+                // 前方向
+                if( !isBackward )
+                {
+                    container.ImageFileContextMapList.Add( ImagePool.PickForward() );
+                }
+
+                // 巻き戻し方向
+                else
+                {
+                    container.ImageFileContextMapList.Insert( 0, ImagePool.PickBackward() );
                 }
             }
 
+            // スライド時は、逆方向のインデックスも同量ずらす
+            if( isSliding )
+            {
+                if( !isBackward )
+                {
+                    ImagePool.ShiftBackwardIndex( container.NumofGrid );
+                }
+                else
+                {
+                    ImagePool.ShiftForwardIndex( -container.NumofGrid );
+                }
+            }
         }
 
-        public async Task Slide()
+        public async Task SlideToForward()
         {
             ImgContainer loopConteiner = null;
 
             foreach(ImgContainer c in Containers)
             {
-                c.Slide();
                 c.CurrentIndex -= 1;
                 if(c.CurrentIndex < -numofBackwardContainer)
                 {
@@ -109,9 +137,18 @@ namespace WpfImageTest
                 }
             }
 
-            if(loopConteiner != null) await PickImageToContainer(loopConteiner, false);
-
             InitContainerPos();
+
+            if( loopConteiner != null )
+            {
+                MapImageFileContextToContainer(loopConteiner, false, true);
+                await loopConteiner.LoadImage();
+            }
+        }
+
+        public async Task SlideToBackward()
+        {
+
         }
 
     }

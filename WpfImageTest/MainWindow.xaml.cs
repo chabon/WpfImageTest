@@ -63,11 +63,12 @@ namespace WpfImageTest
 
         private void LeftButton_Click(object sender, RoutedEventArgs e)
         {
-            ImgContainerManager.Slide();
+            ImgContainerManager.SlideToForward();
         }
 
         private void RightButton_Click(object sender, RoutedEventArgs e)
         {
+            ImgContainerManager.SlideToBackward();
         }
     }
 }

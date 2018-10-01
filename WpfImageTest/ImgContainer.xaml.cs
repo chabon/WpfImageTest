@@ -23,18 +23,32 @@ namespace WpfImageTest
         /* ---------------------------------------------------- */
         //     プロパティ
         /* ---------------------------------------------------- */
-        public int DefaultIndex { get; set; }   // コンテナの並び順(デフォルト)
-        public int CurrentIndex { get; set; }   // コンテナの並び順(現在の)
+        public int DefaultIndex { get; private set; }   // コンテナの並び順(デフォルト)
+        public int CurrentIndex { get; set; }           // コンテナの並び順(現在の)
+        public List<ImageFileContext> ImageFileContextMapList { get; set; } // 画像ファイル付随情報へのマップ(順序はGridと同期的) 
+
         public int NumofGrid
         {
             get { return MainGrid.ColumnDefinitions.Count * MainGrid.RowDefinitions.Count; }
         }
 
+        /* ---------------------------------------------------- */
+        //     コンストラクタ
+        /* ---------------------------------------------------- */
         public ImgContainer(int defaultIndex)
         {
             InitializeComponent();
             DefaultIndex = defaultIndex;
             CurrentIndex = defaultIndex;
+            ImageFileContextMapList = new List<ImageFileContext>();
+        }
+
+        /* ---------------------------------------------------- */
+        //     メソッド
+        /* ---------------------------------------------------- */
+        public void InitIndex()
+        {
+            CurrentIndex = DefaultIndex;
         }
 
         public void InitPos(Point origin)
@@ -74,14 +88,30 @@ namespace WpfImageTest
             }
         }
 
+        public async Task LoadImage()
+        {
+            for(int i=0; i < MainGrid.Children.Count; i++ )
+            {
+                var child = MainGrid.Children[i];
+                Image image = child as Image;
+
+                if(image != null && i < ImageFileContextMapList.Count)
+                {
+                    if(ImageFileContextMapList[i].BitmapImage == null )
+                    {
+                        image.Source = await ImageFileContextMapList[i].GetImage();
+                    }
+                    else
+                    {
+                        image.Source = ImageFileContextMapList[i].BitmapImage;
+                    }
+                }
+            }
+        }
+
         public void Move(double x, double y)
         {
             this.Margin = new Thickness( Margin.Left + x, Margin.Top + y, Margin.Right, Margin.Bottom );
-        }
-
-        public void Slide()
-        {
-            Move(-Width, 0);
         }
 
     }
