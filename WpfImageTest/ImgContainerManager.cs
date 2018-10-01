@@ -27,7 +27,7 @@ namespace WpfImageTest
         /* ---------------------------------------------------- */
         //     プロパティ
         /* ---------------------------------------------------- */
-        public Point Origin { get; set; } = new Point(450, 100);    // 原点
+        public Point Origin { get; set; } = new Point(450, 400);    // 原点
         public List<ImgContainer> Containers { get; set; } = new List<ImgContainer>();
         public ImagePool ImagePool { get; set; } = new ImagePool();
 
@@ -58,13 +58,19 @@ namespace WpfImageTest
 
         public void InitContainerPos()
         {
-            Containers.ForEach( tc => tc.InitPos(Origin) );
+            Containers.ForEach( tc => tc.InitPos(Origin, MainWindow.TempProfile.SlideDirection) );
         }
 
         public void InitContainerGrid()
         {
             Containers.ForEach( tc => tc.InitGrid(2, 2) );
         }
+
+        public void SetImageElementToContainerGrid()
+        {
+            Containers.ForEach( tc => tc.SetImageElementToGrid(MainWindow.TempProfile.SlideDirection) );
+        }
+
 
         public async Task InitAllContainerImage(int index)
         {
@@ -73,6 +79,7 @@ namespace WpfImageTest
             InitContainerIndex();
             InitContainerPos();
             InitContainerGrid();
+            SetImageElementToContainerGrid();
 
             // 前方向マッピング
             MapImageFileContextToContainer(Containers[2], false);
@@ -86,10 +93,11 @@ namespace WpfImageTest
             // 画像のロード
             await Containers[2].LoadImage();
             await Containers[3].LoadImage();
-            await Containers[4].LoadImage();
             await Containers[1].LoadImage();
+            await Containers[4].LoadImage();
             await Containers[0].LoadImage();
         }
+
 
         public void MapImageFileContextToContainer(ImgContainer container, bool isBackward)
         {
@@ -110,6 +118,7 @@ namespace WpfImageTest
                 }
             }
         }
+
 
         public void ReleaseContainerImage(ImgContainer container)
         {
@@ -132,6 +141,7 @@ namespace WpfImageTest
                 }
             });
         }
+
 
         public async Task SlideToForward()
         {
@@ -157,6 +167,7 @@ namespace WpfImageTest
                 await returnConteiner.LoadImage();
             }
         }
+
 
         public async Task SlideToBackward()
         {

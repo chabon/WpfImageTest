@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:WpfImageTest"
         mc:Ignorable="d"
         AllowDrop="True"
-        Title="MainWindow" Height="450" Width="1100">
+        Title="MainWindow" Height="900" Width="1100">
     <Grid>
         <StackPanel>
             <TextBox Name="TextBox1"></TextBox>

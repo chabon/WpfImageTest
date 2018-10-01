@@ -51,11 +51,30 @@ namespace WpfImageTest
             CurrentIndex = DefaultIndex;
         }
 
-        public void InitPos(Point origin)
+        public void InitPos(Point origin, SlideDirection slideDirection)
         {
-            double left = origin.X + CurrentIndex * Width;
-            //double top  = origin.Y + this.DefaultIndex * this.Height;
-            Margin = new Thickness(left, Margin.Top, Margin.Right, Margin.Bottom);
+            double left, top;
+            switch( slideDirection )
+            {
+                default:
+                case SlideDirection.Left:
+                    left = origin.X + CurrentIndex * Width;
+                    top  = origin.Y;
+                    break;
+                case SlideDirection.Top:
+                    left = origin.X;
+                    top  = origin.Y + CurrentIndex * Height;
+                    break;
+                case SlideDirection.Right:
+                    left = origin.X - (CurrentIndex * Width);
+                    top  = origin.Y;
+                    break;
+                case SlideDirection.Bottom:
+                    left = origin.X;
+                    top  = origin.Y - (CurrentIndex * Height);
+                    break;
+            }
+            Margin = new Thickness(left, top, Margin.Right, Margin.Bottom);
         }
 
         public void InitGrid(int numofCol, int numofRow)
@@ -75,17 +94,84 @@ namespace WpfImageTest
                 RowDefinition r = new RowDefinition();
                 MainGrid.RowDefinitions.Add(r);
             }
+        }
 
-            for(int i=0; i< numofRow; i++)
+        public void SetImageElementToGrid(SlideDirection slideDirection)
+        {
+            TileOrientation orientaition;
+            TileOrigin      origin;
+
+            int numofRow = MainGrid.RowDefinitions.Count;
+            int numofCol = MainGrid.ColumnDefinitions.Count;
+
+            switch( slideDirection )
             {
-                for(int j=0; j< numofCol; j++)
+                default:
+                case SlideDirection.Left:
+                    orientaition    = TileOrientation.Vertical;
+                    origin          = TileOrigin.TopLeft;
+                    break;
+                case SlideDirection.Top:
+                    orientaition    = TileOrientation.Horizontal;
+                    origin          = TileOrigin.TopLeft;
+                    break;
+                case SlideDirection.Right:
+                    orientaition    = TileOrientation.Vertical;
+                    origin          = TileOrigin.TopRight;
+                    break;
+                case SlideDirection.Bottom:
+                    orientaition    = TileOrientation.Horizontal;
+                    origin          = TileOrigin.BottomRight;
+                    break;
+            }
+
+            Action<int, int> setToGrid = (i, j) =>
+            {
+                Image image = new Image();
+                MainGrid.Children.Add(image);
+                Grid.SetRow(image, i);
+                Grid.SetColumn(image, j);
+            };
+
+            if(orientaition == TileOrientation.Horizontal )
+            {
+                switch( origin )
                 {
-                    Image image = new Image();
-                    MainGrid.Children.Add(image);
-                    Grid.SetColumn(image, j);
-                    Grid.SetRow(image, i);
+                default:
+                case TileOrigin.TopLeft:
+                    for(int i=0; i < numofRow; i++) for(int j=0; j< numofCol; j++ ) { setToGrid(i, j); }
+                    break;
+                case TileOrigin.TopRight:
+                    for (int i = 0; i < numofRow; i++) for (int j = numofCol -1; j >= 0; j-- ) { setToGrid(i, j); }
+                    break;
+                case TileOrigin.BottomRight:
+                    for (int i = numofRow -1; i >=0; i--) for (int j = numofCol -1; j >=0; j-- ) { setToGrid(i, j); }
+                    break;
+                case TileOrigin.BottomLeft:
+                    for (int i = numofRow -1; i >=0; i--) for (int j = 0; j < numofCol; j++ ) { setToGrid(i, j); }
+                    break;
                 }
             }
+            else
+            {
+                switch( origin )
+                {
+                default:
+                case TileOrigin.TopLeft:
+                    for (int i = 0; i < numofCol; i++) for (int j = 0; j < numofRow; j++ ) { setToGrid(j, i); }
+                    break;
+                case TileOrigin.TopRight:
+                    for (int i = numofCol -1; i >=0; i--) for (int j = 0; j < numofRow; j++ ) { setToGrid(j, i); }
+                    break;
+                case TileOrigin.BottomRight:
+                    for (int i = numofCol -1; i >=0; i--) for (int j = numofRow -1; j >=0; j-- ) { setToGrid(j, i); }
+                    break;
+                case TileOrigin.BottomLeft:
+                    for (int i = 0; i < numofCol; i++) for (int j = numofRow -1; j >=0; j-- ) { setToGrid(j, i); }
+                    break;
+                }
+            }
+
         }
 
         public async Task LoadImage()

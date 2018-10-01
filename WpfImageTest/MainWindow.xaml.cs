@@ -24,6 +24,7 @@ namespace WpfImageTest
     {
         public BenchMarker BenchMarder = new BenchMarker();
         public ImgContainerManager ImgContainerManager = new ImgContainerManager();
+        public static Profile TempProfile = new Profile();
 
         public MainWindow()
         {
@@ -43,18 +44,40 @@ namespace WpfImageTest
 
                 ImgContainerManager.ImagePool.Initialize(files);
                 ImgContainerManager.InitAllContainerImage(0);
-
-                // Async
-                //foreach( string path in files )
-                //{
-                //    BitmapImage source = await BenchMarder.GetImage(path);
-                //    Image image = new Image();
-                //    image.Source = source;
-                //}
-
-                //TextBox1.Text += "image file loaded";
             };
 
+            this.KeyDown += (s, e) =>
+            {
+                switch( e.Key )
+                {
+                    case Key.Left:
+                        TempProfile.SlideDirection = SlideDirection.Left;
+                        TextBox1.Text = "スライド方向：左";
+                        ImgContainerManager.InitAllContainerImage(0);
+                        break;
+                    case Key.Up:
+                        TempProfile.SlideDirection = SlideDirection.Top;
+                        TextBox1.Text = "スライド方向：上";
+                        ImgContainerManager.InitAllContainerImage(0);
+                        break;
+                    case Key.Right:
+                        TempProfile.SlideDirection = SlideDirection.Right;
+                        TextBox1.Text = "スライド方向：右";
+                        ImgContainerManager.InitAllContainerImage(0);
+                        break;
+                    case Key.Down:
+                        TempProfile.SlideDirection = SlideDirection.Bottom;
+                        TextBox1.Text = "スライド方向：下";
+                        ImgContainerManager.InitAllContainerImage(0);
+                        break;
+                    case Key.Return:
+                        ImgContainerManager.SlideToForward();
+                        break;
+                    case Key.Back:
+                        ImgContainerManager.SlideToBackward();
+                        break;
+                }
+            };
         }
 
         private void Button1_Click(object sender, RoutedEventArgs e)
