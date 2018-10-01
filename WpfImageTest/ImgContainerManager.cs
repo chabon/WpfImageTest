@@ -69,6 +69,7 @@ namespace WpfImageTest
         public async Task InitAllContainerImage(int index)
         {
             ImagePool.InitIndex(index);
+            ImagePool.InitImageFileContextRefCount();
             InitContainerIndex();
             InitContainerPos();
             InitContainerGrid();
@@ -110,9 +111,31 @@ namespace WpfImageTest
             }
         }
 
+        public void ReleaseContainerImage(ImgContainer container)
+        {
+            foreach( var child in container.MainGrid.Children )
+            {
+                Image image = child as Image;
+                if(image != null )
+                {
+                    image.Source = null;
+                }
+            }
+
+            container.ImageFileContextMapList.ForEach( context => 
+            {
+                context.RefCount--;
+                if(context.RefCount <= 0 )
+                {
+                    context.RefCount = 0;
+                    context.BitmapImage = null;
+                }
+            });
+        }
+
         public async Task SlideToForward()
         {
-            ImgContainer loopConteiner = null;
+            ImgContainer returnConteiner = null;
 
             foreach(ImgContainer c in Containers)
             {
@@ -120,23 +143,24 @@ namespace WpfImageTest
                 if(c.CurrentIndex < -numofBackwardContainer)
                 {
                     c.CurrentIndex = numofForwardContainer;
-                    loopConteiner = c;
+                    returnConteiner = c;
                 }
             }
 
             InitContainerPos();
 
-            if( loopConteiner != null )
+            if( returnConteiner != null )
             {
-                ImagePool.ShiftBackwardIndex( loopConteiner.ImageFileContextMapList.Count );
-                MapImageFileContextToContainer(loopConteiner, false);
-                await loopConteiner.LoadImage();
+                ReleaseContainerImage(returnConteiner);
+                ImagePool.ShiftBackwardIndex( returnConteiner.ImageFileContextMapList.Count );
+                MapImageFileContextToContainer(returnConteiner, false);
+                await returnConteiner.LoadImage();
             }
         }
 
         public async Task SlideToBackward()
         {
-            ImgContainer loopConteiner = null;
+            ImgContainer returnConteiner = null;
 
             foreach(ImgContainer c in Containers)
             {
@@ -144,17 +168,18 @@ namespace WpfImageTest
                 if(c.CurrentIndex > numofForwardContainer)
                 {
                     c.CurrentIndex = -numofBackwardContainer;
-                    loopConteiner = c;
+                    returnConteiner = c;
                 }
             }
 
             InitContainerPos();
 
-            if( loopConteiner != null )
+            if( returnConteiner != null )
             {
-                ImagePool.ShiftForwardIndex( -loopConteiner.ImageFileContextMapList.Count );
-                MapImageFileContextToContainer(loopConteiner, true);
-                await loopConteiner.LoadImage();
+                ReleaseContainerImage(returnConteiner);
+                ImagePool.ShiftForwardIndex( -returnConteiner.ImageFileContextMapList.Count );
+                MapImageFileContextToContainer(returnConteiner, true);
+                await returnConteiner.LoadImage();
             }
 
         }

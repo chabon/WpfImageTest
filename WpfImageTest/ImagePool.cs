@@ -50,6 +50,14 @@ namespace WpfImageTest
             }
         }
 
+        public void InitImageFileContextRefCount()
+        {
+            foreach( ImageFileContext context in ImageFileContextList )
+            {
+                context.RefCount = 0;
+            }
+        }
+
         public void ShiftForwardIndex(int vari)
         {
             ForwardIndex += vari;
@@ -87,6 +95,7 @@ namespace WpfImageTest
         public ImageFileContext PickForward()
         {
             ImageFileContext context = ImageFileContextList[ForwardIndex];
+            ImageFileContextList[ForwardIndex].RefCount++;
             ForwardIndex++;
             if(ForwardIndex >= ImageFileContextList.Count )
             {
@@ -99,6 +108,7 @@ namespace WpfImageTest
         public ImageFileContext PickBackward()
         {
             ImageFileContext context = ImageFileContextList[BackwardIndex];
+            ImageFileContextList[BackwardIndex].RefCount++;
             BackwardIndex--;
             if(BackwardIndex < 0 )
             {

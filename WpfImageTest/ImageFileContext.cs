@@ -18,7 +18,8 @@ namespace WpfImageTest
         public string        Path { get; set; }
         public BitmapImage   BitmapImage { get; set; }
         public ImageFileInfo Info { get; set; }
-        public bool          Archiver { get; set; } // 仮メンバ
+        public bool          Archiver { get; set; } 
+        public int           RefCount { get; set; } = 0; // 参照カウンタ(コンテナからの)
 
         public ImageFileContext(string path)
         {
