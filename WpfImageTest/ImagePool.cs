@@ -53,30 +53,34 @@ namespace WpfImageTest
         public void ShiftForwardIndex(int vari)
         {
             ForwardIndex += vari;
-            int maxIdx = ImageFileContextList.Count - 1;
-            if( ForwardIndex > maxIdx )
+            int count = ImageFileContextList.Count;
+
+            if( ForwardIndex >= count )
             {
-                ForwardIndex = ForwardIndex % maxIdx;
+                ForwardIndex = ForwardIndex % count;
             }
             else if( ForwardIndex < 0)
             {
-                int p = ForwardIndex % maxIdx;
-                ForwardIndex = maxIdx + p;
+                int p = ForwardIndex % count;
+                if( p == 0 ) ForwardIndex = 0;
+                else ForwardIndex = count + p;
             }
         }
 
         public void ShiftBackwardIndex(int vari)
         {
             BackwardIndex += vari;
-            int maxIdx = ImageFileContextList.Count - 1;
-            if( BackwardIndex > maxIdx )
+            int count = ImageFileContextList.Count;
+
+            if( BackwardIndex >= count )
             {
-                BackwardIndex = BackwardIndex % maxIdx;
+                BackwardIndex = BackwardIndex % count;
             }
             else if( BackwardIndex < 0)
             {
-                int p = BackwardIndex % maxIdx;
-                BackwardIndex = maxIdx + p;
+                int p = BackwardIndex % count;
+                if( p == 0 ) BackwardIndex = 0;
+                else BackwardIndex = count + p;
             }
         }
 

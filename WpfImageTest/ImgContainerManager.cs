@@ -74,13 +74,13 @@ namespace WpfImageTest
             InitContainerGrid();
 
             // 前方向マッピング
-            MapImageFileContextToContainer(Containers[2], false, false);
-            MapImageFileContextToContainer(Containers[3], false, false);
-            MapImageFileContextToContainer(Containers[4], false, false);
+            MapImageFileContextToContainer(Containers[2], false);
+            MapImageFileContextToContainer(Containers[3], false);
+            MapImageFileContextToContainer(Containers[4], false);
 
             // 巻き戻し方向マッピング
-            MapImageFileContextToContainer(Containers[1], true, false);
-            MapImageFileContextToContainer(Containers[0], true, false);
+            MapImageFileContextToContainer(Containers[1], true);
+            MapImageFileContextToContainer(Containers[0], true);
 
             // 画像のロード
             await Containers[2].LoadImage();
@@ -90,7 +90,7 @@ namespace WpfImageTest
             await Containers[0].LoadImage();
         }
 
-        public void MapImageFileContextToContainer(ImgContainer container, bool isBackward, bool isSliding)
+        public void MapImageFileContextToContainer(ImgContainer container, bool isBackward)
         {
             container.ImageFileContextMapList.Clear();
 
@@ -106,19 +106,6 @@ namespace WpfImageTest
                 else
                 {
                     container.ImageFileContextMapList.Insert( 0, ImagePool.PickBackward() );
-                }
-            }
-
-            // スライド時は、逆方向のインデックスも同量ずらす
-            if( isSliding )
-            {
-                if( !isBackward )
-                {
-                    ImagePool.ShiftBackwardIndex( container.NumofGrid );
-                }
-                else
-                {
-                    ImagePool.ShiftForwardIndex( -container.NumofGrid );
                 }
             }
         }
@@ -141,13 +128,34 @@ namespace WpfImageTest
 
             if( loopConteiner != null )
             {
-                MapImageFileContextToContainer(loopConteiner, false, true);
+                ImagePool.ShiftBackwardIndex( loopConteiner.ImageFileContextMapList.Count );
+                MapImageFileContextToContainer(loopConteiner, false);
                 await loopConteiner.LoadImage();
             }
         }
 
         public async Task SlideToBackward()
         {
+            ImgContainer loopConteiner = null;
+
+            foreach(ImgContainer c in Containers)
+            {
+                c.CurrentIndex += 1;
+                if(c.CurrentIndex > numofForwardContainer)
+                {
+                    c.CurrentIndex = -numofBackwardContainer;
+                    loopConteiner = c;
+                }
+            }
+
+            InitContainerPos();
+
+            if( loopConteiner != null )
+            {
+                ImagePool.ShiftForwardIndex( -loopConteiner.ImageFileContextMapList.Count );
+                MapImageFileContextToContainer(loopConteiner, true);
+                await loopConteiner.LoadImage();
+            }
 
         }
 
