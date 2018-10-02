@@ -58,6 +58,14 @@ namespace WpfImageTest
             }
         }
 
+        public void ReleaseBitmapImageOutofRefarence()
+        {
+            foreach( ImageFileContext context in ImageFileContextList )
+            {
+                if( context.RefCount == 0 ) context.BitmapImage = null;
+            }
+        }
+
         public void ShiftForwardIndex(int vari)
         {
             ForwardIndex += vari;

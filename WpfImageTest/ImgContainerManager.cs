@@ -96,6 +96,9 @@ namespace WpfImageTest
             await Containers[1].LoadImage();
             await Containers[4].LoadImage();
             await Containers[0].LoadImage();
+
+            // 使われていないBitmapImageの開放
+            ImagePool.ReleaseBitmapImageOutofRefarence();
         }
 
 
