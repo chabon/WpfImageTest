@@ -32,6 +32,11 @@ namespace WpfImageTest
             get { return MainGrid.ColumnDefinitions.Count * MainGrid.RowDefinitions.Count; }
         }
 
+        public int NumofImage
+        {
+            get { return ImageFileContextMapList.Count(c => !c.IsDummy); }
+        }
+
         /* ---------------------------------------------------- */
         //     コンストラクタ
         /* ---------------------------------------------------- */
@@ -181,7 +186,7 @@ namespace WpfImageTest
                 var child = MainGrid.Children[i];
                 Image image = child as Image;
 
-                if(image != null && i < ImageFileContextMapList.Count)
+                if(image != null && i < ImageFileContextMapList.Count && ImageFileContextMapList[i] != null)
                 {
                     if(ImageFileContextMapList[i].BitmapImage == null )
                     {

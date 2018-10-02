@@ -16,6 +16,7 @@ namespace WpfImageTest
     public class ImageFileContext
     {
         public string        Path { get; set; }
+        public bool          IsDummy { get; set; }
         public BitmapImage   BitmapImage { get; set; }
         public ImageFileInfo Info { get; set; }
         public bool          Archiver { get; set; } 
@@ -36,6 +37,8 @@ namespace WpfImageTest
         {
             return Task.Run(() =>
             {
+                if( Path == null ) return null;
+
                 Stream st = GetStream();
                 var source = new BitmapImage();
 

@@ -106,18 +106,26 @@ namespace WpfImageTest
         {
             container.ImageFileContextMapList.Clear();
 
+            bool bReachEnd = false;
+
             for(int i=0; i < container.NumofGrid; i++ )
             {
                 // 前方向
                 if( !isBackward )
                 {
-                    container.ImageFileContextMapList.Add( ImagePool.PickForward() );
+                    if( bReachEnd ) container.ImageFileContextMapList.Add(ImagePool.DummyImageFileContext);
+                    else container.ImageFileContextMapList.Add(ImagePool.PickForward());
+
+                    if( !bReachEnd && ImagePool.ForwardIndex == 0 ) bReachEnd = true;
                 }
 
                 // 巻き戻し方向
                 else
                 {
-                    container.ImageFileContextMapList.Insert( 0, ImagePool.PickBackward() );
+                    if( bReachEnd ) container.ImageFileContextMapList.Insert(0, ImagePool.DummyImageFileContext);
+                    else container.ImageFileContextMapList.Insert( 0, ImagePool.PickBackward() );
+
+                    if( !bReachEnd && ImagePool.BackwardIndex == ImagePool.ImageFileContextList.Count - 1 ) bReachEnd = true;
                 }
             }
         }
@@ -165,7 +173,7 @@ namespace WpfImageTest
             if( returnConteiner != null )
             {
                 ReleaseContainerImage(returnConteiner);
-                ImagePool.ShiftBackwardIndex( returnConteiner.ImageFileContextMapList.Count );
+                ImagePool.ShiftBackwardIndex( returnConteiner.NumofImage );
                 MapImageFileContextToContainer(returnConteiner, false);
                 await returnConteiner.LoadImage();
             }
@@ -191,7 +199,7 @@ namespace WpfImageTest
             if( returnConteiner != null )
             {
                 ReleaseContainerImage(returnConteiner);
-                ImagePool.ShiftForwardIndex( -returnConteiner.ImageFileContextMapList.Count );
+                ImagePool.ShiftForwardIndex( -returnConteiner.NumofImage );
                 MapImageFileContextToContainer(returnConteiner, true);
                 await returnConteiner.LoadImage();
             }

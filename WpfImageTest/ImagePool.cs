@@ -14,10 +14,10 @@ namespace WpfImageTest
 {
     public class ImagePool
     {
-        public List<ImageFileContext> ImageFileContextList = new List<ImageFileContext>();
+        public List<ImageFileContext>  ImageFileContextList  = new List<ImageFileContext>();
+        public static ImageFileContext DummyImageFileContext = new ImageFileContext(null) { IsDummy = true };
         public int ForwardIndex  { get; private set; } = 0;
         public int BackwardIndex { get; private set; } = 0;
-
 
         public void Initialize(string[] pathes)
         {
