@@ -43,7 +43,7 @@ namespace WpfImageTest
                 var files = Directory.GetFiles( folder[0], "*.*", SearchOption.AllDirectories );
 
                 ImgContainerManager.ImagePool.Initialize(files);
-                ImgContainerManager.InitAllContainerImage(0);
+                ImgContainerManager.InitAllContainer(0);
             };
 
             this.KeyDown += (s, e) =>
@@ -53,29 +53,39 @@ namespace WpfImageTest
                     case Key.Left:
                         TempProfile.SlideDirection = SlideDirection.Left;
                         TextBox1.Text = "スライド方向：左";
-                        ImgContainerManager.InitAllContainerImage(0);
+                        ImgContainerManager.InitAllContainer(0);
                         break;
                     case Key.Up:
                         TempProfile.SlideDirection = SlideDirection.Top;
                         TextBox1.Text = "スライド方向：上";
-                        ImgContainerManager.InitAllContainerImage(0);
+                        ImgContainerManager.InitAllContainer(0);
                         break;
                     case Key.Right:
                         TempProfile.SlideDirection = SlideDirection.Right;
                         TextBox1.Text = "スライド方向：右";
-                        ImgContainerManager.InitAllContainerImage(0);
+                        ImgContainerManager.InitAllContainer(0);
                         break;
                     case Key.Down:
                         TempProfile.SlideDirection = SlideDirection.Bottom;
                         TextBox1.Text = "スライド方向：下";
-                        ImgContainerManager.InitAllContainerImage(0);
+                        ImgContainerManager.InitAllContainer(0);
                         break;
                     case Key.Return:
-                        ImgContainerManager.SlideToForward();
+                        if (Keyboard.Modifiers == ModifierKeys.Shift)
+                            ImgContainerManager.ActiveSlideToForward(true);
+                        else
+                            ImgContainerManager.ActiveSlideToForward(false);
                         break;
                     case Key.Back:
-                        ImgContainerManager.SlideToBackward();
+                        if (Keyboard.Modifiers == ModifierKeys.Shift)
+                            ImgContainerManager.ActiveSlideToBackward(true);
+                        else
+                            ImgContainerManager.ActiveSlideToBackward(false);
                         break;
+                        break;
+                    case Key.Space:
+                        break;
+
                 }
             };
         }
@@ -86,12 +96,10 @@ namespace WpfImageTest
 
         private void LeftButton_Click(object sender, RoutedEventArgs e)
         {
-            ImgContainerManager.SlideToForward();
         }
 
         private void RightButton_Click(object sender, RoutedEventArgs e)
         {
-            ImgContainerManager.SlideToBackward();
         }
     }
 }

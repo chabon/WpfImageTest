@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:WpfImageTest"
         mc:Ignorable="d"
         AllowDrop="True"
-        Title="MainWindow" Height="900" Width="1100">
+        Title="MainWindow" Height="800" Width="1000">
     <Grid>
         <StackPanel>
             <TextBox Name="TextBox1"></TextBox>
@@ -15,7 +15,7 @@
                 <Button Name="LeftButton"  Width="80" Click="LeftButton_Click" >←</Button>
                 <Button Name="RightButton" Width="80" Click="RightButton_Click" >→</Button>
             </StackPanel>
-            <Grid Name="MainGrid"></Grid>
+            <Grid Name="MainGrid" Margin="350,300,0,0"></Grid>
         </StackPanel>
     </Grid>
 </Window>

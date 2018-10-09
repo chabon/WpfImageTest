@@ -23,13 +23,54 @@ namespace WpfImageTest
         /* ---------------------------------------------------- */
         private int numofBackwardContainer  = 2;    // 巻き戻し方向のコンテナの数
         private int numofForwardContainer   = 2;    // 進む方向のコンテナの数
+        private Point wrapPoint     = new Point();  // 前方向スライド後、コンテナが末尾に戻る座標
+        private Point wrapPointRev  = new Point();  // 後方向スライド後、コンテナが先頭に戻る座標
 
         /* ---------------------------------------------------- */
         //     プロパティ
         /* ---------------------------------------------------- */
-        public Point Origin { get; set; } = new Point(450, 400);    // 原点
         public List<ImgContainer> Containers { get; set; } = new List<ImgContainer>();
         public ImagePool ImagePool { get; set; } = new ImagePool();
+        public int CurrentImageIndex
+        {
+            get
+            {
+                ImgContainer ic = Containers.FirstOrDefault(c => c.CurrentIndex == 0);
+                if( ic == null ) return 0;
+                else
+                {
+                    ImageFileContext context = ic.ImageFileContextMapList.FirstOrDefault(ct => !ct.IsDummy);
+                    if( context == null ) return 0;
+                    else
+                    {
+                        return ImagePool.ImageFileContextList.IndexOf(context);
+                    }
+                }
+            }
+        }
+        public ImgContainer CurrentContainer
+        {
+            get
+            {
+                return Containers.FirstOrDefault(c => c.CurrentIndex == 0);
+            }
+        }
+        public Size CurrentContainerGridSize
+        {
+            get
+            {
+                ImgContainer c = CurrentContainer;
+                return new Size(c.Width / c.NumofCol, c.Height / c.NumofRow);
+            }
+        }
+        public int ContainerWidth
+        {
+            get { return (int)Containers[0].Width; }
+        }
+        public int ContainerHeight
+        {
+        get { return (int)Containers[0].Height; }
+        }
 
           
         /* ---------------------------------------------------- */
@@ -58,12 +99,37 @@ namespace WpfImageTest
 
         public void InitContainerPos()
         {
-            Containers.ForEach( tc => tc.InitPos(Origin, MainWindow.TempProfile.SlideDirection) );
+            Containers.ForEach( tc => tc.InitPos(MainWindow.TempProfile.SlideDirection) );
         }
 
-        public void InitContainerGrid()
+        public void InitWrapPoint(SlideDirection dir)
         {
-            Containers.ForEach( tc => tc.InitGrid(2, 2) );
+            wrapPoint.X = 0;    wrapPoint.Y = 0;
+            wrapPointRev.X = 0; wrapPointRev.Y = 0;
+            switch( dir )
+            {
+            case SlideDirection.Left:
+                wrapPoint.X     = -(numofBackwardContainer + 1) * ContainerWidth;
+                wrapPointRev.X  = (numofForwardContainer + 1) * ContainerWidth;
+                break;
+            case SlideDirection.Top:
+                wrapPoint.Y     = -(numofBackwardContainer + 1) * ContainerHeight;
+                wrapPointRev.Y  = (numofForwardContainer + 1) * ContainerHeight;
+                break;
+            case SlideDirection.Right:
+                wrapPoint.X     = (numofBackwardContainer + 1) * ContainerWidth;
+                wrapPointRev.X  = -(numofForwardContainer + 1) * ContainerWidth;
+                break;
+            case SlideDirection.Bottom:
+                wrapPoint.Y     = (numofBackwardContainer + 1) * ContainerHeight;
+                wrapPointRev.Y  = -(numofForwardContainer + 1) * ContainerHeight;
+                break;
+            }
+        }
+
+        public void InitContainerGrid(int numofCol, int numofRow)
+        {
+            Containers.ForEach( tc => tc.InitGrid(numofCol, numofRow) );
         }
 
         public void SetImageElementToContainerGrid()
@@ -72,13 +138,15 @@ namespace WpfImageTest
         }
 
 
-        public async Task InitAllContainerImage(int index)
+        public async Task InitAllContainer(int index)
         {
             ImagePool.InitIndex(index);
             ImagePool.InitImageFileContextRefCount();
             InitContainerIndex();
             InitContainerPos();
-            InitContainerGrid();
+            InitWrapPoint(MainWindow.TempProfile.SlideDirection);
+
+            InitContainerGrid(2, 2);
             SetImageElementToContainerGrid();
 
             // 前方向マッピング
@@ -154,56 +222,47 @@ namespace WpfImageTest
         }
 
 
-        public async Task SlideToForward()
+        public void ActiveSlideToForward(bool slideBySizeOfOneImage)
         {
-            ImgContainer returnConteiner = null;
-
-            foreach(ImgContainer c in Containers)
+            foreach( ImgContainer container in Containers )
             {
-                c.CurrentIndex -= 1;
-                if(c.CurrentIndex < -numofBackwardContainer)
+                container.Animation.OnStoryboardCompleted = async (s, e) =>
                 {
-                    c.CurrentIndex = numofForwardContainer;
-                    returnConteiner = c;
-                }
-            }
-
-            InitContainerPos();
-
-            if( returnConteiner != null )
-            {
-                ReleaseContainerImage(returnConteiner);
-                ImagePool.ShiftBackwardIndex( returnConteiner.NumofImage );
-                MapImageFileContextToContainer(returnConteiner, false);
-                await returnConteiner.LoadImage();
+                    if( container.Pos == wrapPoint )
+                    {
+                        Containers.ForEach(c => c.CurrentIndex -= 1);
+                        container.CurrentIndex = numofForwardContainer;
+                        container.InitPos(MainWindow.TempProfile.SlideDirection);
+                        ReleaseContainerImage(container);
+                        ImagePool.ShiftBackwardIndex( container.NumofImage );
+                        MapImageFileContextToContainer(container, false);
+                        await container.LoadImage();
+                    }
+                };
+                container.Animation.BeginActiveSlideAnimation(slideBySizeOfOneImage, false, 300, CurrentContainerGridSize);
             }
         }
 
 
-        public async Task SlideToBackward()
+        public void ActiveSlideToBackward(bool slideBySizeOfOneImage)
         {
-            ImgContainer returnConteiner = null;
-
-            foreach(ImgContainer c in Containers)
+            foreach( ImgContainer container in Containers )
             {
-                c.CurrentIndex += 1;
-                if(c.CurrentIndex > numofForwardContainer)
+                container.Animation.OnStoryboardCompleted = async (s, e) =>
                 {
-                    c.CurrentIndex = -numofBackwardContainer;
-                    returnConteiner = c;
-                }
+                    if( container.Pos == wrapPointRev )
+                    {
+                        Containers.ForEach(c => c.CurrentIndex += 1);
+                        container.CurrentIndex = -numofBackwardContainer;
+                        container.InitPos(MainWindow.TempProfile.SlideDirection);
+                        ReleaseContainerImage(container);
+                        ImagePool.ShiftForwardIndex( - container.NumofImage );
+                        MapImageFileContextToContainer(container, true);
+                        await container.LoadImage();
+                    }
+                };
+                container.Animation.BeginActiveSlideAnimation(slideBySizeOfOneImage, true, 300, CurrentContainerGridSize);
             }
-
-            InitContainerPos();
-
-            if( returnConteiner != null )
-            {
-                ReleaseContainerImage(returnConteiner);
-                ImagePool.ShiftForwardIndex( -returnConteiner.NumofImage );
-                MapImageFileContextToContainer(returnConteiner, true);
-                await returnConteiner.LoadImage();
-            }
-
         }
 
     }

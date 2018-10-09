@@ -26,15 +26,31 @@ namespace WpfImageTest
         public int DefaultIndex { get; private set; }   // コンテナの並び順(デフォルト)
         public int CurrentIndex { get; set; }           // コンテナの並び順(現在の)
         public List<ImageFileContext> ImageFileContextMapList { get; set; } // 画像ファイル付随情報へのマップ(順序はGridと同期的) 
+        public ImgContainerAnimation Animation { get; set; } 
 
         public int NumofGrid
         {
             get { return MainGrid.ColumnDefinitions.Count * MainGrid.RowDefinitions.Count; }
         }
 
+        public int NumofRow
+        {
+            get { return MainGrid.RowDefinitions.Count; }
+        }
+
+        public int NumofCol
+        {
+            get { return MainGrid.ColumnDefinitions.Count; }
+        }
+
         public int NumofImage
         {
             get { return ImageFileContextMapList.Count(c => !c.IsDummy); }
+        }
+
+        public Point Pos
+        {
+            get { return new Point(Margin.Left, Margin.Top); }
         }
 
         /* ---------------------------------------------------- */
@@ -46,6 +62,7 @@ namespace WpfImageTest
             DefaultIndex = defaultIndex;
             CurrentIndex = defaultIndex;
             ImageFileContextMapList = new List<ImageFileContext>();
+            Animation = new ImgContainerAnimation(this);
         }
 
         /* ---------------------------------------------------- */
@@ -56,27 +73,27 @@ namespace WpfImageTest
             CurrentIndex = DefaultIndex;
         }
 
-        public void InitPos(Point origin, SlideDirection slideDirection)
+        public void InitPos(SlideDirection slideDirection)
         {
             double left, top;
             switch( slideDirection )
             {
                 default:
                 case SlideDirection.Left:
-                    left = origin.X + CurrentIndex * Width;
-                    top  = origin.Y;
+                    left = CurrentIndex * Width;
+                    top  = 0;
                     break;
                 case SlideDirection.Top:
-                    left = origin.X;
-                    top  = origin.Y + CurrentIndex * Height;
+                    left = 0;
+                    top  = CurrentIndex * Height;
                     break;
                 case SlideDirection.Right:
-                    left = origin.X - (CurrentIndex * Width);
-                    top  = origin.Y;
+                    left = - (CurrentIndex * Width);
+                    top  = 0;
                     break;
                 case SlideDirection.Bottom:
-                    left = origin.X;
-                    top  = origin.Y - (CurrentIndex * Height);
+                    left = 0;
+                    top  = - (CurrentIndex * Height);
                     break;
             }
             Margin = new Thickness(left, top, Margin.Right, Margin.Bottom);

@@ -62,6 +62,7 @@
     <Compile Include="ImgContainer.xaml.cs">
       <DependentUpon>ImgContainer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ImgContainerAnimation.cs" />
     <Compile Include="ImgContainerManager.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
