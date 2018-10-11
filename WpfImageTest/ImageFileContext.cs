@@ -48,8 +48,10 @@ namespace WpfImageTest
                     source.CacheOption   = BitmapCacheOption.OnLoad;
                     source.CreateOptions = BitmapCreateOptions.None;
 
-                    source.DecodePixelWidth  = 1920;
-                    source.DecodePixelHeight = 1920;
+                    //source.DecodePixelWidth  = 1920;
+                    //source.DecodePixelHeight = 1920;
+                    source.DecodePixelWidth  = 640;
+                    source.DecodePixelHeight = 640;
 
                     source.StreamSource = st;
                     source.EndInit();

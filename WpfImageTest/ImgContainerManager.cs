@@ -16,6 +16,11 @@ using System.Windows;
 
 namespace WpfImageTest
 {
+    public enum SlideShowState
+    {
+        Stop, Continuous, Interval
+    }
+
     public class ImgContainerManager
     {
         /* ---------------------------------------------------- */
@@ -30,6 +35,7 @@ namespace WpfImageTest
         //     プロパティ
         /* ---------------------------------------------------- */
         public List<ImgContainer> Containers { get; set; } = new List<ImgContainer>();
+        public SlideShowState SlideShowState { get; set; } = SlideShowState.Stop;
         public ImagePool ImagePool { get; set; } = new ImagePool();
         public int CurrentImageIndex
         {
@@ -70,6 +76,33 @@ namespace WpfImageTest
         public int ContainerHeight
         {
         get { return (int)Containers[0].Height; }
+        }
+        public Point ContinuousSlideReturnPoint
+        {
+            get
+            {
+                Point returnPoint = new Point();
+                returnPoint.X = 0; returnPoint.Y = 0;
+                SlideDirection dir = MainWindow.TempProfile.SlideDirection;
+
+                switch( dir )
+                {
+                case SlideDirection.Left:
+                    returnPoint.X   = numofForwardContainer * ContainerWidth;
+                    break;
+                case SlideDirection.Top:
+                    returnPoint.Y   = numofForwardContainer * ContainerHeight;
+                    break;
+                case SlideDirection.Right:
+                    returnPoint.X   = - numofForwardContainer * ContainerWidth;
+                    break;
+                case SlideDirection.Bottom:
+                    returnPoint.Y   = - numofForwardContainer * ContainerHeight;
+                    break;
+                }
+
+                return returnPoint;
+            }
         }
 
           
@@ -140,6 +173,7 @@ namespace WpfImageTest
 
         public async Task InitAllContainer(int index)
         {
+            StopSlideShow();
             ImagePool.InitIndex(index);
             ImagePool.InitImageFileContextRefCount();
             InitContainerIndex();
@@ -224,6 +258,8 @@ namespace WpfImageTest
 
         public void ActiveSlideToForward(bool slideBySizeOfOneImage)
         {
+            if( SlideShowState != SlideShowState.Stop ) StopSlideShow();
+
             foreach( ImgContainer container in Containers )
             {
                 container.Animation.OnStoryboardCompleted = async (s, e) =>
@@ -246,6 +282,8 @@ namespace WpfImageTest
 
         public void ActiveSlideToBackward(bool slideBySizeOfOneImage)
         {
+            if( SlideShowState != SlideShowState.Stop ) StopSlideShow();
+
             foreach( ImgContainer container in Containers )
             {
                 container.Animation.OnStoryboardCompleted = async (s, e) =>
@@ -265,5 +303,51 @@ namespace WpfImageTest
             }
         }
 
+        public void StartContinuousSlideShow()
+        {
+            if( SlideShowState == SlideShowState.Continuous ) return;
+            if( SlideShowState == SlideShowState.Interval ) StopSlideShow();
+
+            foreach( ImgContainer container in Containers )
+            {
+                // 折り返し時
+                container.Animation.OnStoryboardCompleted = async (s, e) =>
+                {
+                    Containers.ForEach(c => c.CurrentIndex -= 1);
+                    container.CurrentIndex = numofForwardContainer;
+                    container.InitPos(MainWindow.TempProfile.SlideDirection);
+                    ReleaseContainerImage(container);
+                    ImagePool.ShiftBackwardIndex(container.NumofImage);
+                    MapImageFileContextToContainer(container, false);
+                    container.Animation.BeginContinuousSlideAnimation(ContinuousSlideReturnPoint, wrapPoint, 3000);
+                    await container.LoadImage();
+                };
+
+                // アニメーションスタート
+                Point ptFrom = new Point(container.Margin.Left, container.Margin.Top);
+                container.Animation.BeginContinuousSlideAnimation(ptFrom, wrapPoint, 3000);
+            }
+
+            SlideShowState = SlideShowState.Continuous;
+        }
+
+        public void StopSlideShow()
+        {
+            foreach( ImgContainer container in Containers )
+            {
+                container.Animation.StopSlideAnimation();
+            }
+
+            SlideShowState = SlideShowState.Stop;
+        }
+
+        public void ToggleSlideShow()
+        {
+            if(SlideShowState == SlideShowState.Stop )
+            {
+                StartContinuousSlideShow();
+            }
+            else StopSlideShow();
+        }
     }
 }

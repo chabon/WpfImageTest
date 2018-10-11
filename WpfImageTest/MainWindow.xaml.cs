@@ -84,6 +84,7 @@ namespace WpfImageTest
                         break;
                         break;
                     case Key.Space:
+                        ImgContainerManager.ToggleSlideShow();
                         break;
 
                 }

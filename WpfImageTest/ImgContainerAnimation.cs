@@ -166,5 +166,42 @@ namespace WpfImageTest
             }
             return new Point(x, y);
         }
+
+        public void BeginContinuousSlideAnimation(Point ptFrom, Point wrapPoint, int moveTime)
+        {
+            // アニメーション
+            storyboard = new Storyboard();
+            var a = new ThicknessAnimation();
+            //a.FillBehavior = FillBehavior.Stop;
+            Storyboard.SetTarget(a, container);
+            Storyboard.SetTargetProperty(a, new PropertyPath(ImgContainer.MarginProperty));
+            a.From  = new Thickness(ptFrom.X, ptFrom.Y, 0, 0);
+            a.To    = new Thickness(wrapPoint.X, wrapPoint.Y, 0, 0);
+
+            // 時間
+            double p;
+            if(MainWindow.TempProfile.IsHorizontalSlide) p = (ptFrom.X - wrapPoint.X) / container.Width;
+            else p = (ptFrom.Y - wrapPoint.Y) / container.Height;
+            if (p < 0) p = -p;
+            a.Duration = TimeSpan.FromMilliseconds(moveTime * p);
+            //Timeline.SetDesiredFrameRate(storyboard, 30);
+
+            storyboard.Children.Add(a);
+            storyboard.Completed += OnStoryboardCompleted;
+            storyboard.Begin();
+
+        }
+
+        public void StopSlideAnimation()
+        {
+            if (storyboard != null)
+            {
+                container.Margin = new Thickness(container.Margin.Left, container.Margin.Top, 0, 0);
+
+                storyboard.Completed -= OnStoryboardCompleted;
+                storyboard.Remove();  // completed イベントが発火する
+            }
+        }
+
     }
 }
