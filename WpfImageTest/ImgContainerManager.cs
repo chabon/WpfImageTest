@@ -264,6 +264,10 @@ namespace WpfImageTest
             {
                 container.Animation.OnStoryboardCompleted = async (s, e) =>
                 {
+                    // 座標を確定させる
+                    container.Margin = new Thickness(container.Animation.ActiveSlideEndPoint.X, container.Animation.ActiveSlideEndPoint.Y, 0, 0);
+
+                    // リターンするコンテナ
                     if( container.Pos == wrapPoint )
                     {
                         Containers.ForEach(c => c.CurrentIndex -= 1);
@@ -288,6 +292,10 @@ namespace WpfImageTest
             {
                 container.Animation.OnStoryboardCompleted = async (s, e) =>
                 {
+                    // 座標を確定させる
+                    container.Margin = new Thickness(container.Animation.ActiveSlideEndPoint.X, container.Animation.ActiveSlideEndPoint.Y, 0, 0);
+
+                    // リターンするコンテナ
                     if( container.Pos == wrapPointRev )
                     {
                         Containers.ForEach(c => c.CurrentIndex += 1);

@@ -21,12 +21,12 @@ namespace WpfImageTest
         /* ---------------------------------------------------- */
         private ImgContainer   container;
         private Storyboard     storyboard;
-        Point                  activeSlideEndPoint;
 
         /* ---------------------------------------------------- */
         //     プロパティ
         /* ---------------------------------------------------- */
         public EventHandler  OnStoryboardCompleted { get; set; }
+        public Point         ActiveSlideEndPoint { get; private set; }
 
         /* ---------------------------------------------------- */
         //     コンストラクタ
@@ -50,7 +50,7 @@ namespace WpfImageTest
             dest_x = Math.Round(dest_x, 0);
             double dest_y = container.Margin.Top + diff.Y;
             dest_y = Math.Round(dest_y, 0);
-            activeSlideEndPoint = new Point(dest_x, dest_y);
+            ActiveSlideEndPoint = new Point(dest_x, dest_y);
 
             // アニメーション
             storyboard = new Storyboard();
@@ -74,11 +74,6 @@ namespace WpfImageTest
             storyboard.Children.Add(a);
 
             // アニメーション終了時
-            storyboard.Completed += (s, e) =>
-            {
-                // 座標を確定させる
-                container.Margin = new Thickness(activeSlideEndPoint.X, activeSlideEndPoint.Y, 0, 0);
-            };
             storyboard.Completed += OnStoryboardCompleted;
 
             //IsActiveSliding = true;
